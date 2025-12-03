@@ -37,12 +37,15 @@ public class AuthCompanyUseCase {
                     throw new UsernameNotFoundException("Username/password incorrect");
                 });
 
+        // Verificar se as senhas são iguais
         var passwordMatches = this.passwordEncoder.matches(authCompanyDTO.getPassword(), company.getPassword());
 
+        // Se não forem iguais
         if (!passwordMatches) {
             throw new AuthenticationException();
         }
 
+        // Se forem iguais
         Algorithm algorithm = Algorithm.HMAC256(secretKey);
 
         var expiresIn = Instant.now().plus(Duration.ofHours(2));
@@ -53,9 +56,12 @@ public class AuthCompanyUseCase {
                 .withClaim("roles", Arrays.asList("COMPANY"))
                 .sign(algorithm);
 
+                var roles = Arrays.asList("COMPANY");
+
         var authCompanyResponseDTO = AuthCompanyResponseDTO.builder()
                 .access_token(token)
                 .expires_in(expiresIn.toEpochMilli())
+                .roles(roles)
                 .build();
         return authCompanyResponseDTO;
     }
